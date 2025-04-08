@@ -21,10 +21,10 @@ export class User {
   @Prop({ enum: Role, required: true })
   role: Role;
 
-  @Prop({ type: [Types.ObjectId], ref: 'Groups', required: false })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Groups' }], required: false })
   groups: Types.ObjectId[];
 
-  @Prop({ type: [Types.ObjectId], ref: 'Courses', required: false })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Courses' }], required: false })
   courses: Types.ObjectId[];
 }
 

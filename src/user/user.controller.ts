@@ -8,12 +8,13 @@ import {
   Delete,
   Req,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto, LoginUserDto, Role } from './dto/create-user.dto';
+import { CreateUserDto, Role } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Request } from 'express';
 import { QueryUserDto } from './dto/query-user.dto';
+import { UserService } from './user.service';
+import { Request } from 'express';
 import {
   ApiBody,
   ApiOperation,
@@ -22,12 +23,18 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/guards/roles.decorator';
+import { SelfGuard } from 'src/guards/self.guard';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiBody({ type: CreateUserDto })
@@ -37,15 +44,7 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Post('login')
-  @ApiOperation({ summary: 'Login as user' })
-  @ApiBody({ type: LoginUserDto })
-  @ApiResponse({ status: 200, description: 'Login successful' })
-  @ApiResponse({ status: 400, description: 'Invalid credentials' })
-  login(@Body() loginUserDto: LoginUserDto) {
-    return this.userService.login(loginUserDto);
-  }
-
+  @UseGuards(AuthGuard)
   @Get('mydata')
   @ApiOperation({ summary: 'Get data of current logged-in user' })
   @ApiResponse({ status: 200, description: 'User data retrieved successfully' })
@@ -53,6 +52,9 @@ export class UserController {
     return this.userService.getMyData(req);
   }
 
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(AuthGuard)
   @Get()
   @ApiOperation({
     summary: 'Get all users with filters, sorting and pagination',
@@ -74,6 +76,7 @@ export class UserController {
     return this.userService.findAll(query);
   }
 
+  @UseGuards(AuthGuard, SelfGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Get a single user by ID' })
   @ApiParam({ name: 'id', type: String, description: 'User ID' })
@@ -83,6 +86,7 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+  @UseGuards(AuthGuard, SelfGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Update a user by ID' })
   @ApiParam({ name: 'id', type: String, description: 'User ID' })
@@ -93,6 +97,7 @@ export class UserController {
     return this.userService.update(id, updateUserDto);
   }
 
+  @UseGuards(AuthGuard, SelfGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a user by ID' })
   @ApiParam({ name: 'id', type: String, description: 'User ID' })

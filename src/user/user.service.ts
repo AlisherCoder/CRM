@@ -3,28 +3,21 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
-import { CreateUserDto, LoginUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { QueryUserDto } from './dto/query-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schema/user.schema';
 import { Model, Types } from 'mongoose';
-import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
-import { join } from 'path';
-import { unlinkSync } from 'fs';
 import { Request } from 'express';
-import { QueryUserDto } from './dto/query-user.dto';
+import { unlinkSync } from 'fs';
+import { join } from 'path';
+import * as bcrypt from 'bcrypt';
+
 @Injectable()
 export class UserService {
-  private acckey = process.env.ACCKEY;
-  private refkey = process.env.REFKEY;
-
-  constructor(
-    @InjectModel(User.name) private UserModel: Model<User>,
-    private jwtService: JwtService,
-  ) {}
+  constructor(@InjectModel(User.name) private UserModel: Model<User>) {}
 
   async create(createUserDto: CreateUserDto) {
     let { password, phone } = createUserDto;
@@ -46,31 +39,6 @@ export class UserService {
       delete result.password;
 
       return { data: result };
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
-  }
-
-  async login(loginUserDto: LoginUserDto) {
-    let { password, phone } = loginUserDto;
-    try {
-      let user = await this.UserModel.findOne({ phone });
-      if (!user) {
-        return new UnauthorizedException('User not found');
-      }
-
-      let isValid = await bcrypt.compare(password, user.password);
-      if (!isValid) {
-        throw new BadRequestException('Invalid password or phone');
-      }
-
-      let accessToken = this.genAccessToken({ id: user._id, role: user.role });
-      let refreshToken = this.genRefreshToken({
-        id: user._id,
-        role: user.role,
-      });
-
-      return { accessToken, refreshToken };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -213,19 +181,5 @@ export class UserService {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
-  }
-
-  genAccessToken(payload: any) {
-    return this.jwtService.sign(payload, {
-      secret: this.acckey,
-      expiresIn: '12h',
-    });
-  }
-
-  genRefreshToken(payload: any) {
-    return this.jwtService.sign(payload, {
-      secret: this.refkey,
-      expiresIn: '7d',
-    });
   }
 }

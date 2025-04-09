@@ -22,7 +22,7 @@ export class UserService {
   async create(createUserDto: CreateUserDto) {
     let { password, phone } = createUserDto;
     try {
-      let user = await this.UserModel.findOne({ phone });
+      let user = await this.UserModel.findOne({ phone }).exec();
       if (user) {
         return new ConflictException(
           'A user with this phone number already exists',
@@ -46,9 +46,10 @@ export class UserService {
 
   async getMyData(req: Request) {
     let user = req['user'];
+    console.log(user);
     try {
       let data = await this.UserModel.findById(user.id)
-        .populate('groups courses')
+        .populate({path: 'groups'})
         .select('-password')
         .exec();
       return { data };
@@ -124,13 +125,13 @@ export class UserService {
     }
 
     try {
-      let user = await this.UserModel.findById(id);
+      let user = await this.UserModel.findById(id).exec();
       if (!user) {
         return new NotFoundException('User not found');
       }
 
       if (phone) {
-        let isExists = await this.UserModel.findOne({ phone });
+        let isExists = await this.UserModel.findOne({ phone }).exec();
         if (isExists) {
           return new ConflictException(
             'A user with this phone number already exists',
@@ -165,7 +166,7 @@ export class UserService {
     }
 
     try {
-      let data = await this.UserModel.findByIdAndDelete(id);
+      let data = await this.UserModel.findByIdAndDelete(id).exec();
       if (!data) {
         return new NotFoundException('User not found');
       }

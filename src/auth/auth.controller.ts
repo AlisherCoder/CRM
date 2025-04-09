@@ -1,11 +1,12 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginUserDto } from 'src/user/dto/create-user.dto';
 import { RefreshTokenDto } from './dto/refreshToken.dto';
 import { RefreshGuard } from 'src/guards/refresh.guard';
 import { AuthService } from './auth.service';
 import { Request } from 'express';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

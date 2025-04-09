@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsEnum,
+  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -51,6 +53,12 @@ export class CreateUserDto {
   @ApiProperty({ example: 'STUDENT' })
   @IsEnum(Role)
   role: Role;
+
+  @ApiProperty({ example: ['course_id'] })
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true, message: 'Invalid course ID' })
+  courses?: string[];
 }
 
 export class LoginUserDto {

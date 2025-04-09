@@ -1,11 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsArray,
+  IsEnum,
+  IsInt,
   IsMongoId,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
+  Min,
 } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateCourseDto {
   @ApiProperty({ example: 'English' })
@@ -18,9 +23,23 @@ export class CreateCourseDto {
   @IsNotEmpty()
   description: string;
 
-  @ApiProperty({ example: 'English ielts' })
+  @ApiProperty({ example: 500000 })
+  @IsNumber()
+  @IsPositive()
+  price: number;
+
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  @Min(0)
+  duration_value: number;
+
+  @ApiProperty({ example: 'year' })
+  @IsNotEmpty()
+  @IsEnum(['day', 'year', 'week', 'month'])
+  duration_unit: 'day' | 'year' | 'week' | 'month';
+
+  @ApiProperty({ example: 'parent_id' })
   @IsOptional()
-  @IsArray()
-  @IsMongoId({ each: true })
-  children?: string[];
+  @IsMongoId({ message: 'Invalid parent course ID' })
+  parent?: Types.ObjectId;
 }

@@ -63,17 +63,18 @@ export class CoursesService {
     if (search.duration_unit) filter.duration_unit = search.duration_unit;
 
     try {
-      let data = await this.CourseModel.find(filter)
+      let courses = await this.CourseModel.find(filter)
         .skip((page - 1) * limit)
         .limit(limit)
         .sort([[sortBy, orderBy]])
+        .select(['-teachers', '-groups'])
         .exec();
 
-      if (!data.length) {
+      if (!courses.length) {
         return new NotFoundException('Not found courses');
       }
 
-      return { data };
+      return { data: courses };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -99,17 +100,17 @@ export class CoursesService {
 
   async update(id: string, updateCourseDto: UpdateCourseDto) {
     try {
-      let course = await this.CourseModel.findByIdAndUpdate(
+      let updatedCourse = await this.CourseModel.findByIdAndUpdate(
         id,
         updateCourseDto,
         { new: true },
       ).exec();
 
-      if (!course) {
+      if (!updatedCourse) {
         return new NotFoundException('Not found course');
       }
 
-      return { data: course };
+      return { data: updatedCourse };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -117,15 +118,15 @@ export class CoursesService {
 
   async remove(id: string) {
     try {
-      let course = await this.CourseModel.findByIdAndDelete(id).exec();
+      let deletedCourse = await this.CourseModel.findByIdAndDelete(id).exec();
 
-      if (!course) {
+      if (!deletedCourse) {
         return new NotFoundException('Not found course');
       }
 
-      await this.CourseModel.deleteMany({ parent: course._id }).exec();
+      await this.CourseModel.deleteMany({ parent: deletedCourse._id }).exec();
 
-      return { data: course };
+      return { data: deletedCourse };
     } catch (error) {
       throw new BadRequestException(error.message);
     }

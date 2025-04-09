@@ -6,7 +6,6 @@ import {
   IsDate,
   IsMongoId,
   IsNotEmpty,
-  IsOptional,
   IsString,
 } from 'class-validator';
 
@@ -43,4 +42,40 @@ export class CreateGroupDto {
   @ArrayNotEmpty()
   @IsMongoId({ each: true, message: 'Invalid teacher ID' })
   teachers: string[];
+}
+
+export class AddDelStudentDto {
+  @ApiProperty({ example: 'group_id' })
+  @IsMongoId()
+  @IsNotEmpty()
+  group_id: string;
+
+  @ApiProperty({ example: 'student_id' })
+  @IsMongoId()
+  @IsNotEmpty()
+  student_id: string;
+}
+
+export class AddDelCourseDto {
+  @ApiProperty({ example: 'group_id' })
+  @IsMongoId()
+  @IsNotEmpty()
+  group_id: string;
+
+  @ApiProperty({ example: 'course_id' })
+  @IsMongoId()
+  @IsNotEmpty()
+  course_id: string;
+}
+
+export class AddDelTeacherDto {
+  @ApiProperty({ example: 'group_id' })
+  @IsMongoId()
+  @IsNotEmpty()
+  group_id: string;
+
+  @ApiProperty({ example: 'teacher_id' })
+  @IsMongoId()
+  @IsNotEmpty()
+  teacher_id: string;
 }

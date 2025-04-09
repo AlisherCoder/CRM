@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateGroupDto {
@@ -9,6 +10,7 @@ export class UpdateGroupDto {
 
   @ApiProperty({ example: false })
   @IsBoolean()
+  @Type(() => Boolean)
   @IsNotEmpty()
   status?: boolean;
 }

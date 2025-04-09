@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  ArrayNotEmpty,
   IsArray,
   IsDate,
   IsMongoId,
@@ -26,20 +27,20 @@ export class CreateGroupDto {
   endDate: Date;
 
   @ApiProperty({ example: ['course_id'] })
-  @IsOptional()
   @IsArray()
+  @ArrayNotEmpty()
   @IsMongoId({ each: true, message: 'Invalid course ID' })
-  courses?: string[];
+  courses: string[];
 
   @ApiProperty({ example: ['student_id'] })
-  @IsOptional()
   @IsArray()
+  @ArrayNotEmpty()
   @IsMongoId({ each: true, message: 'Invalid student ID' })
-  students?: string[];
+  students: string[];
 
   @ApiProperty({ example: ['teacher_id'] })
-  @IsOptional()
   @IsArray()
+  @ArrayNotEmpty()
   @IsMongoId({ each: true, message: 'Invalid teacher ID' })
-  teachers?: string[];
+  teachers: string[];
 }

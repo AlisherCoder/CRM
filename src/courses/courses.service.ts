@@ -61,7 +61,7 @@ export class CoursesService {
 
     if (search.duration_value) filter.duration_value = search.duration_value;
     if (search.duration_unit) filter.duration_unit = search.duration_unit;
-    
+
     try {
       let data = await this.CourseModel.find(filter)
         .skip((page - 1) * limit)
@@ -82,8 +82,10 @@ export class CoursesService {
   async findOne(id: string) {
     try {
       let course = await this.CourseModel.findById(id)
-        .populate('parent')
-        .populate({ path: 'children' });
+        .populate({ path: 'parent', select: 'name' })
+        .populate({ path: 'children', select: 'name' })
+        .populate({ path: 'teachers', select: ['full_name', 'image', 'phone'] })
+        .populate({ path: 'groups', select: 'name' });
 
       if (!course) {
         return new NotFoundException('Not found course');

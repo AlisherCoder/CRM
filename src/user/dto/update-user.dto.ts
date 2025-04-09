@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
+  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -7,6 +9,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class UpdateUserDto {
   @ApiProperty({ example: 'John Doe' })
@@ -42,4 +45,10 @@ export class UpdateUserDto {
   @MinLength(4)
   @MaxLength(32)
   password?: string;
+
+  @ApiProperty({ example: ['course_id'] })
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true, message: 'Invalid course ID' })
+  courses?: Types.ObjectId[];
 }

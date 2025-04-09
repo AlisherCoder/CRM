@@ -10,6 +10,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Types } from 'mongoose';
 
 export enum Role {
   ADMIN = 'ADMIN',
@@ -58,7 +59,7 @@ export class CreateUserDto {
   @IsOptional()
   @IsArray()
   @IsMongoId({ each: true, message: 'Invalid course ID' })
-  courses?: string[];
+  courses?: Types.ObjectId[];
 }
 
 export class LoginUserDto {

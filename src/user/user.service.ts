@@ -14,13 +14,17 @@ import { Request } from 'express';
 import { unlinkSync } from 'fs';
 import { join } from 'path';
 import * as bcrypt from 'bcrypt';
+import { Courses } from 'src/courses/schema/course.schema';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private UserModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private UserModel: Model<User>,
+    @InjectModel(Courses.name) private CourseModel: Model<Courses>,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
-    let { password, phone } = createUserDto;
+    let { password, phone, courses } = createUserDto;
     try {
       let user = await this.UserModel.findOne({ phone }).exec();
       if (user) {
@@ -30,13 +34,20 @@ export class UserService {
       }
 
       let hashpass = await bcrypt.hash(password, 10);
-      let data = await this.UserModel.create({
+      let newUser = await this.UserModel.create({
         ...createUserDto,
         password: hashpass,
       });
 
-      let result = data.toObject() as Partial<User>;
+      let result = newUser.toObject() as Partial<User>;
       delete result.password;
+
+      if (courses && courses?.length) {
+        await this.CourseModel.updateMany(
+          { _id: { $in: courses } },
+          { $addToSet: { teachers: newUser._id } },
+        );
+      }
 
       return { data: result };
     } catch (error) {
@@ -46,10 +57,10 @@ export class UserService {
 
   async getMyData(req: Request) {
     let user = req['user'];
-    console.log(user);
     try {
       let data = await this.UserModel.findById(user.id)
-        .populate({path: 'groups'})
+        .populate({ path: 'groups', select: 'name' })
+        .populate({ path: 'courses', select: 'name' })
         .select('-password')
         .exec();
       return { data };
@@ -76,18 +87,18 @@ export class UserService {
     if (role) filter.role = role;
 
     try {
-      let data = await this.UserModel.find(filter)
+      let users = await this.UserModel.find(filter)
         .skip((page - 1) * limit)
         .limit(limit)
         .sort([[sortBy, orderBy]])
         .select(['-password', '-groups', '-courses'])
         .exec();
 
-      if (!data.length) {
+      if (!users.length) {
         throw new NotFoundException('Not found users');
       }
 
-      return { data };
+      return { data: users };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -99,16 +110,17 @@ export class UserService {
     }
 
     try {
-      let data = await this.UserModel.findById(id)
-        .populate('groups courses')
+      let user = await this.UserModel.findById(id)
+        .populate({ path: 'groups', select: 'name' })
+        .populate({ path: 'courses', select: 'name' })
         .select('-password')
         .exec();
 
-      if (!data) {
+      if (!user) {
         return new NotFoundException('User not found');
       }
 
-      return { data };
+      return { data: user };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -119,13 +131,15 @@ export class UserService {
       throw new BadRequestException('Invalid user ID');
     }
 
-    let { password, phone } = updateUserDto;
+    let { password, phone, courses } = updateUserDto;
+
     if (password) {
       updateUserDto.password = bcrypt.hashSync(password, 10);
     }
 
     try {
       let user = await this.UserModel.findById(id).exec();
+
       if (!user) {
         return new NotFoundException('User not found');
       }
@@ -139,11 +153,34 @@ export class UserService {
         }
       }
 
-      let data = await this.UserModel.findByIdAndUpdate(id, updateUserDto, {
-        new: true,
-      })
+      let oldCourses: any = user.courses;
+      oldCourses = oldCourses.map((id: string) => id.toString());
+
+      let updatedUser = await this.UserModel.findByIdAndUpdate(
+        id,
+        updateUserDto,
+        {
+          new: true,
+        },
+      )
         .select('-password')
         .exec();
+
+      if (courses && courses.length) {
+        await this.CourseModel.updateMany(
+          { _id: { $in: courses } },
+          { $addToSet: { teachers: updatedUser?._id } },
+        );
+      }
+
+      let removedCoursesId = oldCourses.filter((id) => !courses?.includes(id));
+
+      if (removedCoursesId.length) {
+        await this.CourseModel.updateMany(
+          { _id: { $in: removedCoursesId } },
+          { $pull: { teachers: updatedUser?._id } },
+        );
+      }
 
       if (updateUserDto.image) {
         let filepath = join('uploads', user.image);
@@ -154,7 +191,7 @@ export class UserService {
         }
       }
 
-      return { data };
+      return { data: updatedUser };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -166,19 +203,24 @@ export class UserService {
     }
 
     try {
-      let data = await this.UserModel.findByIdAndDelete(id).exec();
-      if (!data) {
+      let deletedUser = await this.UserModel.findByIdAndDelete(id).exec();
+      if (!deletedUser) {
         return new NotFoundException('User not found');
       }
 
-      let filepath = join('uploads', data.image);
+      await this.CourseModel.updateMany(
+        { _id: { $in: deletedUser.courses } },
+        { $pull: { teachers: deletedUser?._id } },
+      );
+
+      let filepath = join('uploads', deletedUser.image);
       try {
         unlinkSync(filepath);
       } catch (error) {
         console.log(error.message);
       }
 
-      return { data };
+      return { data: deletedUser };
     } catch (error) {
       throw new BadRequestException(error.message);
     }

@@ -1,4 +1,14 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateGroupDto } from './create-group.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
-export class UpdateGroupDto extends PartialType(CreateGroupDto) {}
+export class UpdateGroupDto {
+  @ApiProperty({ example: 'N20' })
+  @IsString()
+  @IsNotEmpty()
+  name?: string;
+
+  @ApiProperty({ example: false })
+  @IsBoolean()
+  @IsNotEmpty()
+  status?: boolean;
+}

@@ -91,7 +91,7 @@ export class UserService {
         .skip((page - 1) * limit)
         .limit(limit)
         .sort([[sortBy, orderBy]])
-        .select(['-password', '-groups', '-courses'])
+        .select(['-password', '-groups', '-courses', '-lessons'])
         .exec();
 
       if (!users.length) {
@@ -113,6 +113,7 @@ export class UserService {
       let user = await this.UserModel.findById(id)
         .populate({ path: 'groups', select: 'name' })
         .populate({ path: 'courses', select: 'name' })
+        .populate({ path: 'lessons' })
         .select('-password')
         .exec();
 

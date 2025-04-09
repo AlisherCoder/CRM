@@ -91,7 +91,7 @@ export class CoursesController {
   update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
     return this.coursesService.update(id, updateCourseDto);
   }
-
+  
   @Roles(Role.ADMIN, Role.SUPERADMIN)
   @UseGuards(AuthGuard, RolesGuard)
   @Delete(':id')

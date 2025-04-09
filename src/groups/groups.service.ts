@@ -271,7 +271,7 @@ export class GroupsService {
         .skip((page - 1) * limit)
         .limit(limit)
         .sort([[sortBy, orderBy]])
-        .select(['-teachers', '-courses', '-students'])
+        .select(['-teachers', '-courses', '-students', '-lessons'])
         .exec();
 
       if (!groups.length) {
@@ -290,6 +290,11 @@ export class GroupsService {
         .populate({ path: 'courses', select: 'name' })
         .populate({ path: 'teachers', select: ['full_name', 'image', 'phone'] })
         .populate({ path: 'students', select: ['full_name', 'image', 'phone'] })
+        .populate({ path: 'lessons' })
+        .populate({
+          path: 'lessons',
+          select: ['-group', '-teacher', '-course'],
+        })
         .exec();
 
       if (!group) {

@@ -25,6 +25,9 @@ export class Groups {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], required: true })
   teachers: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Lessons' }], required: false })
+  lessons?: Types.ObjectId[];
 }
 
 export const GroupsSchema = SchemaFactory.createForClass(Groups);

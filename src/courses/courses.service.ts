@@ -67,7 +67,7 @@ export class CoursesService {
         .skip((page - 1) * limit)
         .limit(limit)
         .sort([[sortBy, orderBy]])
-        .select(['-teachers', '-groups'])
+        .select(['-teachers', '-groups', '-lessons'])
         .exec();
 
       if (!courses.length) {
@@ -86,7 +86,8 @@ export class CoursesService {
         .populate({ path: 'parent', select: 'name' })
         .populate({ path: 'children', select: 'name' })
         .populate({ path: 'teachers', select: ['full_name', 'image', 'phone'] })
-        .populate({ path: 'groups', select: 'name' });
+        .populate({ path: 'groups', select: 'name' })
+        .populate({ path: 'lessons' });
 
       if (!course) {
         return new NotFoundException('Not found course');

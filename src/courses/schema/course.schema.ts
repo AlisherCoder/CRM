@@ -28,6 +28,9 @@ export class Courses {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], required: false })
   teachers?: Types.ObjectId[];
+
+  @Prop({ type: [Types.ObjectId], ref: 'Lessons', required: false })
+  lessons?: Types.ObjectId[];
 }
 
 export const CoursesSchema = SchemaFactory.createForClass(Courses);

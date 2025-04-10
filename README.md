@@ -53,25 +53,28 @@ Ushbu loyiha ta'lim markazlari faoliyatini avtomatlashtirish uchun mo‘ljallang
    ```
 
 2. **Bog‘lanish uchun .env faylini yaratish: .env faylida quyidagilar bo‘lishi kerak**:
-  ```bash
-   MONGO_URI = 'mongodb://localhost:27017/yourdb'
-   PORT = 3000
-   ACCKEY = your_secret_key
-   REFKEY = your_secret_key
 
-   ```
+```bash
+ MONGO_URI = 'mongodb://localhost:27017/yourdb'
+ PORT = 3000
+ ACCKEY = your_secret_key
+ REFKEY = your_secret_key
+
+```
 
 3. **Dependenciyalarni o‘rnatish**:
-  ```bash
-   npm install
 
-  ```
+```bash
+ npm install
+
+```
 
 4. **Serverni ishga tushirish:**
-  ```bash
-   npm run start:dev
 
-  ```
+```bash
+ npm run start:dev
+
+```
 
 API-larni test qilish uchun quyidagi yo‘llardan foydalanishingiz mumkin:
 
